@@ -11,6 +11,9 @@ pipeline {
 
         APP_NAME = "tyranitor"
     }
+    tools {
+        sonarQubeScanner 'SonarScanner'  
+    }
 
     stages {
 
