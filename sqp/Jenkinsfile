@@ -8,8 +8,12 @@ pipeline {
         SONAR_HOST_URL     = "http://sonarqube:9000"
         COVERAGE_THRESHOLD = "60"
         REPORTS_DIR        = "reports"
-
         APP_NAME = "tyranitor"
+    }
+
+    tools {
+        // IMPORTANTE: usar 'hudson.plugins.sonar.SonarRunnerInstallation'
+        // pero en pipeline se usa como 'tool'
     }
 
     stages {
@@ -55,40 +59,40 @@ pipeline {
             }
         }
 
-stage("4 · Análisis SonarQube") {
-    steps {
-        withSonarQubeEnv("SonarQube") {
-            script {
-                def scannerHome = tool 'SonarScanner'
-                sh """
-                    . venv/bin/activate
+        stage("4 · Análisis SonarQube") {
+            steps {
+                withSonarQubeEnv("SonarQube") {
+                    script {
+                        def scannerHome = tool 'SonarScanner'
+                        sh """
+                            . venv/bin/activate
 
-                    ${scannerHome}/bin/sonar-scanner \
-                      -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                      -Dsonar.projectName="${SONAR_PROJECT_NAME}" \
-                      -Dsonar.sources=sqp/src \
-                      -Dsonar.tests=sqp/tests \
-                      -Dsonar.exclusions=**/__pycache__/** \
-                      -Dsonar.python.coverage.reportPaths=${REPORTS_DIR}/coverage.xml \
-                      -Dsonar.host.url=${SONAR_HOST_URL} \
-                      -Dsonar.python.version=3
-                """
+                            ${scannerHome}/bin/sonar-scanner \
+                              -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                              -Dsonar.projectName="${SONAR_PROJECT_NAME}" \
+                              -Dsonar.sources=sqp/src \
+                              -Dsonar.tests=sqp/tests \
+                              -Dsonar.exclusions=**/__pycache__/**,**/*.pyc \
+                              -Dsonar.python.coverage.reportPaths=${REPORTS_DIR}/coverage.xml \
+                              -Dsonar.host.url=${SONAR_HOST_URL} \
+                              -Dsonar.python.version=3
+                        """
+                    }
+                }
             }
         }
-    }
-}
-        stage('5 · Quality Gate') {
-    steps {
-        script {
-            timeout(time: 10, unit: 'MINUTES') {
-                def qg = waitForQualityGate()
-                if (qg.status != 'OK') {
-                    echo "Quality Gate: ${qg.status}"
+
+        stage("5 · Quality Gate") {
+            steps {
+                script {
+                    timeout(time: 10, unit: 'MINUTES') {
+                        def qg = waitForQualityGate()
+                        echo "Quality Gate: ${qg.status}"
+                    }
                 }
             }
         }
     }
-}
 
     post {
         always {
