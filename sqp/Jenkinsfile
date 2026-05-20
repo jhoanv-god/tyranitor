@@ -28,13 +28,12 @@ pipeline {
                     . venv/bin/activate
         
                     pip install --upgrade pip
-                    pip install --no-cache-dir -r requirements.txt
+                    pip install --no-cache-dir -r sqp/requirements.txt
         
                     mkdir -p ${REPORTS_DIR}
                 """
             }
-        }
-        
+        }        
         stage("3 · Pruebas unitarias") {
             steps {
                 sh """
