@@ -21,23 +21,20 @@ pipeline {
             }
         }
 
-       stage("2 · Preparar entorno") {
-    steps {
-        sh """
-            apt-get update
-            apt-get install -y python3-venv python3-pip
-
-            python3 -m venv venv
-            . venv/bin/activate
-
-            pip install --upgrade pip
-            pip install --no-cache-dir -r requirements.txt
-
-            mkdir -p ${REPORTS_DIR}
-        """
-    }
-}
-
+        stage("2 · Preparar entorno") {
+            steps {
+                sh """
+                    python3 -m venv venv
+                    . venv/bin/activate
+        
+                    pip install --upgrade pip
+                    pip install --no-cache-dir -r requirements.txt
+        
+                    mkdir -p ${REPORTS_DIR}
+                """
+            }
+        }
+        
         stage("3 · Pruebas unitarias") {
             steps {
                 sh """
