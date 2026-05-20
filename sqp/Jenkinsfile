@@ -11,9 +11,6 @@ pipeline {
 
         APP_NAME = "tyranitor"
     }
-    tools {
-        sonarRunner 'SonarScanner'
-    }
 
     stages {
 
@@ -29,14 +26,15 @@ pipeline {
                 sh """
                     python3 -m venv venv
                     . venv/bin/activate
-        
+
                     pip install --upgrade pip
                     pip install --no-cache-dir -r sqp/requirements.txt
-        
+
                     mkdir -p ${REPORTS_DIR}
                 """
             }
-        }        
+        }
+
         stage("3 · Pruebas unitarias") {
             steps {
                 sh """
@@ -60,18 +58,21 @@ pipeline {
         stage("4 · Análisis SonarQube") {
             steps {
                 withSonarQubeEnv("SonarQube") {
-                    sh """
-                        . venv/bin/activate
+                    script {
+                        def scannerHome = tool 'SonarScanner'
+                        sh """
+                            . venv/bin/activate
 
-                        sonar-scanner \
-                          -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                          -Dsonar.projectName="${SONAR_PROJECT_NAME}" \
-                          -Dsonar.sources=sqp \
-                          -Dsonar.tests=sqp \
-                          -Dsonar.python.coverage.reportPaths=${REPORTS_DIR}/coverage.xml \
-                          -Dsonar.host.url=${SONAR_HOST_URL} \
-                          -Dsonar.python.version=3
-                    """
+                            ${scannerHome}/bin/sonar-scanner \
+                              -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                              -Dsonar.projectName="${SONAR_PROJECT_NAME}" \
+                              -Dsonar.sources=sqp \
+                              -Dsonar.tests=sqp \
+                              -Dsonar.python.coverage.reportPaths=${REPORTS_DIR}/coverage.xml \
+                              -Dsonar.host.url=${SONAR_HOST_URL} \
+                              -Dsonar.python.version=3
+                        """
+                    }
                 }
             }
         }
