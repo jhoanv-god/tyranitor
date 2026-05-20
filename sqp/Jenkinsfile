@@ -55,28 +55,28 @@ pipeline {
             }
         }
 
-        stage("4 · Análisis SonarQube") {
-            steps {
-                withSonarQubeEnv("SonarQube") {
-                    script {
-                        def scannerHome = tool 'SonarScanner'
-                        sh """
-                            . venv/bin/activate
+stage("4 · Análisis SonarQube") {
+    steps {
+        withSonarQubeEnv("SonarQube") {
+            script {
+                def scannerHome = tool 'SonarScanner'
+                sh """
+                    . venv/bin/activate
 
-                            ${scannerHome}/bin/sonar-scanner \
-                              -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                              -Dsonar.projectName="${SONAR_PROJECT_NAME}" \
-                              -Dsonar.sources=sqp \
-                              -Dsonar.tests=sqp \
-                              -Dsonar.python.coverage.reportPaths=${REPORTS_DIR}/coverage.xml \
-                              -Dsonar.host.url=${SONAR_HOST_URL} \
-                              -Dsonar.python.version=3
-                        """
-                    }
-                }
+                    ${scannerHome}/bin/sonar-scanner \
+                      -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                      -Dsonar.projectName="${SONAR_PROJECT_NAME}" \
+                      -Dsonar.sources=sqp/src \
+                      -Dsonar.tests=sqp/tests \
+                      -Dsonar.exclusions=**/__pycache__/** \
+                      -Dsonar.python.coverage.reportPaths=${REPORTS_DIR}/coverage.xml \
+                      -Dsonar.host.url=${SONAR_HOST_URL} \
+                      -Dsonar.python.version=3
+                """
             }
         }
-
+    }
+}
         stage("5 · Quality Gate") {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
